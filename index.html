@@ -4,21 +4,34 @@
   <meta charset="UTF-8">
   <title>Tunnel Redirect</title>
   <script>
-    // Fetch the current tunnel URL and redirect
-    fetch('tunnel-url.txt?_=' + Date.now())
-      .then(r => r.text())
-      .then(url => {
+    // Fetch the current tunnel URL from GitHub API (bypasses Pages cache)
+    var apiUrl = 'https://api.github.com/repos/Jackgmlin/tunnel-redirect/contents/tunnel-url.txt';
+    fetch(apiUrl, {headers: {'Accept': 'application/vnd.github.v3.raw'}})
+      .then(function(r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(function(url) {
         url = url.trim();
         if (url && url.startsWith('https://')) {
-          // Append current path/query to tunnel URL
           var suffix = location.pathname.replace(/^\/(tunnel-redirect)?/, '') + location.search + location.hash;
           window.location.replace(url + suffix);
         } else {
           document.getElementById('status').textContent = 'Tunnel is starting up. Refresh in a few seconds.';
         }
       })
-      .catch(() => {
-        document.getElementById('status').textContent = 'Tunnel URL not available yet. Refresh in a few seconds.';
+      .catch(function(e) {
+        // Fallback: try the local file (GitHub Pages served)
+        fetch('tunnel-url.txt?_=' + Date.now())
+          .then(function(r) { return r.text(); })
+          .then(function(url) {
+            url = url.trim();
+            if (url && url.startsWith('https://')) {
+              window.location.replace(url);
+            } else {
+              document.getElementById('status').textContent = 'Tunnel is starting up. Refresh in a few seconds.';
+            }
+          })
+          .catch(function() {
+            document.getElementById('status').textContent = 'Tunnel URL not available yet. Refresh in a few seconds.';
+          });
       });
   </script>
   <style>
