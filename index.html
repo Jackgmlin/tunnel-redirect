@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tunnel Redirect</title>
+  <script>
+    // Fetch the current tunnel URL and redirect
+    fetch('tunnel-url.txt?_=' + Date.now())
+      .then(r => r.text())
+      .then(url => {
+        url = url.trim();
+        if (url && url.startsWith('https://')) {
+          // Append current path/query to tunnel URL
+          var suffix = location.pathname.replace(/^\/(tunnel-redirect)?/, '') + location.search + location.hash;
+          window.location.replace(url + suffix);
+        } else {
+          document.getElementById('status').textContent = 'Tunnel is starting up. Refresh in a few seconds.';
+        }
+      })
+      .catch(() => {
+        document.getElementById('status').textContent = 'Tunnel URL not available yet. Refresh in a few seconds.';
+      });
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f0f0f0; }
+    .card { background: white; padding: 2em 3em; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+    h2 { color: #333; }
+    #status { color: #666; font-size: 1.1em; }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid #ddd; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Connecting to tunnel...</h2>
+    <p><span class="spinner"></span><span id="status">Redirecting to your local server...</span></p>
+  </div>
+</body>
+</html>
